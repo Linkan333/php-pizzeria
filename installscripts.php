@@ -1,6 +1,12 @@
 <?php
 
-// NOTE! AI GJORDE DETTA FÖR DET BLEV SVIN FUCKED UP
+if (function_exists('mysqli_report')) { @mysqli_report(MYSQLI_REPORT_OFF); }
+if (!function_exists('mysqli_connect')) {
+  echo 'MySQLi extension is not available in PHP.';
+  exit;
+}
+
+// NOTE! AI GJORDE DENNA STYLING DELEN
 function respond($ok, $title, $messages) {
   if (!is_array($messages)) $messages = array($messages);
   echo "<!DOCTYPE html><html lang=\"sv\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Installera</title><style>
@@ -130,10 +136,46 @@ $env = array(
 $content = '';
 foreach ($env as $k => $v) { $content .= $k . '=' . $v . "\n"; }
 $file = __DIR__ . '/.env';
-if (@file_put_contents($file, $content) !== false) {
+$written = @file_put_contents($file, $content);
+if ($written !== false) {
   $messages[] = '.env skapad: ' . $file;
 } else {
-  $errors[] = 'Kunde inte skriva .env';
+  $desktopWritten = false;
+  if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' || (defined('PHP_OS_FAMILY') && PHP_OS_FAMILY === 'Windows')) {
+    $candidates = array();
+    $userProfile = getenv('USERPROFILE');
+    if ($userProfile) { $candidates[] = $userProfile . DIRECTORY_SEPARATOR . 'Desktop' . DIRECTORY_SEPARATOR . '.env'; }
+    $homeDrive = getenv('HOMEDRIVE'); $homePath = getenv('HOMEPATH');
+    if ($homeDrive && $homePath) { $candidates[] = $homeDrive . $homePath . DIRECTORY_SEPARATOR . 'Desktop' . DIRECTORY_SEPARATOR . '.env'; }
+    foreach ($candidates as $dst) {
+      if (@file_put_contents($dst, $content) !== false) {
+        $messages[] = '.env kunde inte skrivas i projektet. Skrev istället fil på Skrivbordet: ' . $dst . ' — flytta den till projektroten.';
+        $desktopWritten = true;
+        break;
+      }
+    }
+  }
+  if (!$desktopWritten) {
+    $alt = __DIR__ . '/.env.sample';
+    if (@file_put_contents($alt, $content) !== false) {
+      $errors[] = 'Kunde inte skriva .env. Skapade istället .env.sample: ' . $alt . ' — döp om till .env och se till att webbservern har skriv-rättigheter.';
+    } else {
+      $errors[] = 'Kunde inte skriva .env. Kopiera innehållet nedan till en .env-fil i projektroten och ge rättigheter:';
+      $messages[] = $content;
+    }
+  }
+}
+
+$uploadsDir = __DIR__ . '/public/uploads';
+if (!is_dir($uploadsDir)) {
+  if (@mkdir($uploadsDir, 0775, true)) {
+    @chmod($uploadsDir, 0775);
+    $messages[] = 'Skapade mapp: ' . $uploadsDir;
+  } else {
+    $errors[] = 'Kunde inte skapa mapp: ' . $uploadsDir . ' — skapa den manuellt och ge skriv-rättigheter till webbservern.';
+  }
+} else {
+  $messages[] = 'Mapp finns redan: ' . $uploadsDir;
 }
 
 if (!empty($errors)) {
@@ -141,5 +183,5 @@ if (!empty($errors)) {
 } else {
   respond(true, 'Installationen slutförd', $messages);
 }
-
+exit;
 ?>

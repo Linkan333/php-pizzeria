@@ -5,6 +5,7 @@ $alreadyInstalled = file_exists(__DIR__ . '/../.env');
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   require_once __DIR__ . '/../installscripts.php';
+  exit;
 }
 ?>
 <!DOCTYPE html>
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="card">
     <div class="section">
       <?php if ($alreadyInstalled): ?>
-        <p class="note">.env finns redan. Om du kör installationen igen kan befintliga inställningar skrivas över.</p>
+        <p class="note">Jag har loadat denna med sjukt mycket virus. MVH DEN KOMMER LADDA NER DET TILL C:\xampp\htdocs\php-intro</p>
       <?php endif; ?>
       <form method="post">
         <h3>Databas</h3>
@@ -77,9 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <button type="submit">Installera</button>
         </div>
       </form>
-      <p class="muted">Installationen skapar tabellerna <code>meny</code>, <code>info</code>, <code>users</code>, lägger till en testpizza och skriver .env.</p>
     </div>
   </div>
 </body>
 </html>
-
