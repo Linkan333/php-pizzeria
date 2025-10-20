@@ -33,32 +33,52 @@ if ($selectedPizza) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Sida</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 1.5rem; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    header a { color:#2563eb; text-decoration:none; }
+    header a:hover { text-decoration:underline; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; }
+    .section { padding: .75rem; }
+    .card img { width: 100%; height: 180px; object-fit: cover; background: #f7f7f7; }
+    label { display:block; font-weight: 600; margin: .5rem 0 .25rem; }
+    select, input[type=text], input[type=number], input[type=file] { width:100%; border:1px solid #ddd; border-radius:6px; padding:.5rem; }
+    .actions { margin-top:.75rem; display:flex; gap:.5rem; }
+    button { border:1px solid #ccc; border-radius:6px; padding:.5rem .75rem; background:#f8f9fb; cursor:pointer; }
+    .danger { background:#fff0f0; border-color:#f3c2c2; color:#b00020; }
+    .muted { color:#555; font-size:.9rem; }
+  </style>
 </head>
 <body>
-  <h1>Admin</h1>
-  <p>Inloggad som Gio. <a href="login.php?logout=1">Logga ut</a></p>
+  <header>
+    <h1>Admin</h1>
+    <div>
+      Inloggad som Gio · <a href="login.php?logout=1">Logga ut</a> · <a href="index.php">Till meny</a>
+    </div>
+  </header>
 
-  <form method="post">
-    <label for="pizzor">Välj pizza:</label>
-    <select name="pizzor" id="pizzor" onchange="this.form.submit()">
-      <option value="">--Välj en pizza--</option>
-      <?php foreach ($pizzas as $pName): ?>
-        <option value="<?php echo htmlspecialchars($pName); ?>" <?php echo ($selectedPizza === $pName) ? 'selected' : ''; ?>>
-          <?php echo htmlspecialchars($pName); ?>
-        </option>
-      <?php endforeach; ?>
-    </select>
-    <noscript><button type="submit">Välj</button></noscript>
-  </form>
+  <div class="card">
+    <div class="section">
+      <label for="pizzor">Välj pizza</label>
+      <form method="post">
+        <select name="pizzor" id="pizzor" onchange="this.form.submit()">
+          <option value="">--Välj en pizza--</option>
+          <?php foreach ($pizzas as $pName): ?>
+            <option value="<?php echo htmlspecialchars($pName); ?>" <?php echo ($selectedPizza === $pName) ? 'selected' : ''; ?>>
+              <?php echo htmlspecialchars($pName); ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+        <noscript><div class="actions"><button type="submit">Välj</button></div></noscript>
+      </form>
+      <?php if (!$selectedPizza && empty($pizzas)): ?>
+        <p class="muted">Hittade inga pizzor i databasen. Kontrollera tabellen <code>meny</code> och kolumnen <code>pizzor</code>.</p>
+      <?php endif; ?>
+    </div>
+  </div>
 
   <?php if ($pizza): ?>
-    <h2><?php echo htmlspecialchars($selectedPizza); ?></h2>
-    <?php if ($pizzaImage): ?>
-      <img src="uploads/<?php echo htmlspecialchars($pizzaImage); ?>" alt="Pizza bild" style="max-width:300px;"><br>
-    <?php else: ?>
-      <p>Ingen bild uppladdad.</p>
-    <?php endif; ?>
-
     <?php
       $ing = '';
       if (isset($pizza['Ingredienser'])) { $ing = $pizza['Ingredienser']; }
@@ -66,62 +86,63 @@ if ($selectedPizza) {
       elseif (isset($pizza['ingredients'])) { $ing = $pizza['ingredients']; }
       $pris = isset($pizza['priser']) ? (int)$pizza['priser'] : 0;
     ?>
-
-    <h3>Redigera pizza</h3>
-    <form action="pizza_save.php" method="post">
-      <input type="hidden" name="action" value="update" />
-      <input type="hidden" name="original_name" value="<?php echo htmlspecialchars($selectedPizza); ?>" />
-      <div>
-        <label>Namnet</label><br>
-        <input type="text" name="pizzor" value="<?php echo htmlspecialchars($selectedPizza); ?>" required />
+    <div class="grid">
+      <div class="card">
+        <div class="section">
+          <h3><?php echo htmlspecialchars($selectedPizza); ?></h3>
+          <?php if ($pizzaImage): ?>
+            <img src="uploads/<?php echo htmlspecialchars($pizzaImage); ?>" alt="Pizza bild">
+          <?php else: ?>
+            <div class="muted">Ingen bild uppladdad</div>
+          <?php endif; ?>
+          <form action="upload.php" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="pizza_name" value="<?php echo htmlspecialchars($selectedPizza); ?>">
+            <label for="pizza_image">Ladda upp ny bild</label>
+            <input type="file" name="pizza_image" id="pizza_image" accept="image/*" required>
+            <div class="actions"><button type="submit">Ladda upp</button></div>
+          </form>
+        </div>
       </div>
-      <div>
-        <label>Ingredienser</label><br>
-        <input type="text" name="ingredients" value="<?php echo htmlspecialchars($ing); ?>" />
-      </div>
-      <div>
-        <label>Pris (kr)</label><br>
-        <input type="number" name="priser" value="<?php echo (int)$pris; ?>" min="0" step="1" />
-      </div>
-      <button type="submit">Spara</button>
-    </form>
 
-    <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top:1rem;">
-      <input type="hidden" name="pizza_name" value="<?php echo htmlspecialchars($selectedPizza); ?>">
-      <label for="pizza_image">Ladda upp ny bild:</label>
-      <input type="file" name="pizza_image" id="pizza_image" accept="image/*" required>
-      <button type="submit">Ladda Upp</button>
-    </form>
-
-    <form action="pizza_delete.php" method="post" onsubmit="return confirm('Ta bort denna pizza?');" style="margin-top:1rem;">
-      <input type="hidden" name="pizza_name" value="<?php echo htmlspecialchars($selectedPizza); ?>" />
-      <button type="submit" style="color:#fff;background:#b00020;">Radera pizza</button>
-    </form>
+      <div class="card">
+        <div class="section">
+          <h3>Redigera pizza</h3>
+          <form action="pizza_save.php" method="post">
+            <input type="hidden" name="action" value="update" />
+            <input type="hidden" name="original_name" value="<?php echo htmlspecialchars($selectedPizza); ?>" />
+            <label>Namnet</label>
+            <input type="text" name="pizzor" value="<?php echo htmlspecialchars($selectedPizza); ?>" required />
+            <label>Ingredienser</label>
+            <input type="text" name="ingredients" value="<?php echo htmlspecialchars($ing); ?>" />
+            <label>Pris (kr)</label>
+            <input type="number" name="priser" value="<?php echo (int)$pris; ?>" min="0" step="1" />
+            <div class="actions">
+              <button type="submit">Spara</button>
+              </div>
+          </form>
+          <form action="pizza_delete.php" method="post" onsubmit="return confirm('Ta bort denna pizza?');">
+            <input type="hidden" name="pizza_name" value="<?php echo htmlspecialchars($selectedPizza); ?>" />
+            <div class="actions"><button class="danger" type="submit">Radera pizza</button></div>
+          </form>
+        </div>
+      </div>
+    </div>
   <?php endif; ?>
 
-  <?php if (!$selectedPizza && empty($pizzas)): ?>
-    <p>Hittade inga pizzor i databasen. Kontrollera tabellen <code>meny</code> och kolumnen <code>pizzor</code>.</p>
-  <?php endif; ?>
-
-  <hr>
-  <h3>Lägg till ny pizza</h3>
-  <form action="pizza_save.php" method="post">
-    <input type="hidden" name="action" value="create" />
-    <div>
-      <label>Namnet</label><br>
-      <input type="text" name="pizzor" required />
+  <div class="card" style="margin-top:1rem;">
+    <div class="section">
+      <h3>Lägg till ny pizza</h3>
+      <form action="pizza_save.php" method="post">
+        <input type="hidden" name="action" value="create" />
+        <label>Namnet</label>
+        <input type="text" name="pizzor" required />
+        <label>Ingredienser</label>
+        <input type="text" name="ingredients" />
+        <label>Pris (kr)</label>
+        <input type="number" name="priser" value="0" min="0" step="1" />
+        <div class="actions"><button type="submit">Lägg till</button></div>
+      </form>
     </div>
-    <div>
-      <label>Ingredienser</label><br>
-      <input type="text" name="ingredients" />
-    </div>
-    <div>
-      <label>Pris (kr)</label><br>
-      <input type="number" name="priser" value="0" min="0" step="1" />
-    </div>
-    <button type="submit">Lägg till</button>
-  </form>
-
-  <p><a href="index.php">Gå Tillbaka</a></p>
+  </div>
 </body>
 </html>

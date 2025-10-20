@@ -25,10 +25,10 @@ function db_connect() {
   if ($conn instanceof mysqli) return $conn;
 
   $env = env_read(__DIR__ . '/.env');
-  $server = isset($env['server']) ? $env['server'] : 'localhost';
-  $user   = isset($env['user']) ? $env['user'] : 'root';
-  $pass   = isset($env['pass']) ? $env['pass'] : '';
-  $dbName = isset($env['dbName']) ? $env['dbName'] : 'disgustingPizza';
+  $server = isset($env['server']) ? $env['server'] : (isset($env['DB_HOST']) ? $env['DB_HOST'] : 'localhost');
+  $user   = isset($env['user'])   ? $env['user']   : (isset($env['DB_USER']) ? $env['DB_USER'] : 'root');
+  $pass   = isset($env['pass'])   ? $env['pass']   : (isset($env['DB_PASSWORD']) ? $env['DB_PASSWORD'] : '');
+  $dbName = isset($env['dbName']) ? $env['dbName'] : (isset($env['DB_DATABASE']) ? $env['DB_DATABASE'] : 'disgustingPizza');
 
   $conn = @mysqli_connect($server, $user, $pass, $dbName);
   if (!$conn) {

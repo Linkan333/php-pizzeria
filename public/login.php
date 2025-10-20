@@ -29,8 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   $env = env_read(__DIR__ . '/../.env');
   $expectedPass = isset($env['GIO_PASSWORD']) ? (string)$env['GIO_PASSWORD'] : 'gio123';
+  $expectedUser = isset($env['GIO_USERNAME']) ? (string)$env['GIO_USERNAME'] : 'Gio';
 
-  if (strcasecmp($username, 'Gio') === 0 && safe_equals($expectedPass, $password)) {
+  if (strcasecmp($username, $expectedUser) === 0 && safe_equals($expectedPass, $password)) {
     $_SESSION['user'] = 'Gio';
     header('Location: admin.php');
     exit;
