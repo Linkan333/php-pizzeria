@@ -1,8 +1,10 @@
 <?php
-// Lightweight DB + session utilities used across the app.
 
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
+}
+if (function_exists('mysqli_report')) {
+  mysqli_report(MYSQLI_REPORT_OFF);
 }
 
 function env_read($path = __DIR__ . '/.env') {
@@ -11,7 +13,7 @@ function env_read($path = __DIR__ . '/.env') {
   foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
     $line = trim($line);
     if ($line === '' || $line[0] === '#' || strpos($line, '=') === false) continue;
-    [$k, $v] = array_map('trim', explode('=', $line, 2));
+    list($k, $v) = array_map('trim', explode('=', $line, 2));
     $v = trim($v, "\"' ");
     $vars[$k] = $v;
   }
@@ -23,10 +25,10 @@ function db_connect() {
   if ($conn instanceof mysqli) return $conn;
 
   $env = env_read(__DIR__ . '/.env');
-  $server = $env['server'] ?? 'localhost';
-  $user   = $env['user'] ?? 'root';
-  $pass   = $env['pass'] ?? '';
-  $dbName = $env['dbName'] ?? 'disgustingPizza';
+  $server = isset($env['server']) ? $env['server'] : 'localhost';
+  $user   = isset($env['user']) ? $env['user'] : 'root';
+  $pass   = isset($env['pass']) ? $env['pass'] : '';
+  $dbName = isset($env['dbName']) ? $env['dbName'] : 'disgustingPizza';
 
   $conn = @mysqli_connect($server, $user, $pass, $dbName);
   if (!$conn) {
