@@ -4,6 +4,7 @@ $alreadyInstalled = file_exists(__DIR__ . '/../.env');
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // Run the installer with defaults/.env — no inputs needed
   require_once __DIR__ . '/../installscripts.php';
   exit;
 }
@@ -21,9 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header a:hover { text-decoration:underline; }
     .card { border: 1px solid #ddd; border-radius: 8px; background: #fff; max-width: 760px; }
     .section { padding: 1rem; }
-    label { display:block; font-weight:600; margin:.5rem 0 .25rem; }
-    input { width:100%; border:1px solid #ddd; border-radius:6px; padding:.5rem; }
-    .grid { display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
     .actions { margin-top:1rem; }
     button { border:1px solid #ccc; border-radius:6px; padding:.6rem 1rem; background:#f8f9fb; cursor:pointer; }
     .muted { color:#555; font-size:.9rem; }
@@ -39,41 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="card">
     <div class="section">
       <?php if ($alreadyInstalled): ?>
-        <p class="note">Jag har loadat denna med sjukt mycket virus. MVH DEN KOMMER LADDA NER DET TILL C:\xampp\htdocs\php-intro</p>
+        <p class="note">Installationen verkar redan vara konfigurerad (.env finns). Du kan köra om installationen för att återskapa databasen/tabellerna om något saknas.</p>
+      <?php else: ?>
+        <p class="muted">Klicka på Installera för att skapa databasen, tabellerna och standarddata. Inga inställningar behövs.</p>
       <?php endif; ?>
+
       <form method="post">
-        <h3>Databas</h3>
-        <div class="grid">
-          <div>
-            <label for="host">Värd</label>
-            <input type="text" id="host" name="host" placeholder="localhost" required />
-          </div>
-          <div>
-            <label for="database">Databas</label>
-            <input type="text" id="database" name="database" placeholder="disgustingPizza" required />
-          </div>
-          <div>
-            <label for="user">Användare</label>
-            <input type="text" id="user" name="user" placeholder="root" required />
-          </div>
-          <div>
-            <label for="password">Lösenord</label>
-            <input type="password" id="password" name="password" placeholder="" />
-          </div>
-        </div>
-
-        <h3 style="margin-top:1rem;">Gio inlogg</h3>
-        <div class="grid">
-          <div>
-            <label for="gio_user">Användarnamn</label>
-            <input type="text" id="gio_user" name="gio_user" placeholder="Gio" required />
-          </div>
-          <div>
-            <label for="gio_pass">Lösenord</label>
-            <input type="password" id="gio_pass" name="gio_pass" placeholder="gio123" required />
-          </div>
-        </div>
-
         <div class="actions">
           <button type="submit">Installera</button>
         </div>

@@ -6,7 +6,9 @@ if (!function_exists('mysqli_connect')) {
   exit;
 }
 
-// NOTE! AI GJORDE DENNA STYLING DELEN
+require_once __DIR__ . '/conn.php';
+
+// Simple HTML response helper
 function respond($ok, $title, $messages) {
   if (!is_array($messages)) $messages = array($messages);
   echo "<!DOCTYPE html><html lang=\"sv\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Installera</title><style>
@@ -28,26 +30,16 @@ function respond($ok, $title, $messages) {
   echo "<p><a href=\"install.php\">Tillbaka</a> · <a href=\"login.php\">Logga in</a> · <a href=\"index.php\">Meny</a></p>";
   echo "</div></div></body></html>";
 }
-// AI GJORDE INTE DETTA DET VAR JAG
-
-$host = isset($_POST['host']) ? trim($_POST['host']) : '';
-$db   = isset($_POST['database']) ? trim($_POST['database']) : '';
-$user = isset($_POST['user']) ? trim($_POST['user']) : '';
-$pass = isset($_POST['password']) ? (string)$_POST['password'] : '';
-$gioU = isset($_POST['gio_user']) ? trim($_POST['gio_user']) : 'Gio';
-$gioP = isset($_POST['gio_pass']) ? (string)$_POST['gio_pass'] : 'gio123';
+// Derive settings from existing .env or sensible defaults — no inputs
+$env = env_read(__DIR__ . '/.env');
+$host = isset($env['server']) ? trim($env['server']) : 'localhost';
+$db   = isset($env['dbName']) ? trim($env['dbName']) : 'disgustingPizza';
+$user = isset($env['user']) ? trim($env['user']) : 'root';
+$pass = isset($env['pass']) ? (string)$env['pass'] : '';
+$gioU = isset($env['GIO_USERNAME']) ? trim($env['GIO_USERNAME']) : 'Gio';
+$gioP = isset($env['GIO_PASSWORD']) ? (string)$env['GIO_PASSWORD'] : 'gio123';
 
 $errors = array();
-if ($host === '' || $db === '' || $user === '') {
-  $errors[] = 'Ange värd, databas och användare.';
-}
-if ($gioU === '' || $gioP === '') {
-  $errors[] = 'Ange Gio användarnamn och lösenord.';
-}
-if (!empty($errors)) {
-  respond(false, 'Fel i formuläret', $errors);
-  return;
-}
 
 $conn = @mysqli_connect($host, $user, $pass, $db);
 if (!$conn) {
@@ -119,7 +111,9 @@ $u = mysqli_real_escape_string($conn, $gioU);
 $h = mysqli_real_escape_string($conn, $hash);
 @mysqli_query($conn, "INSERT INTO users (username, password_hash, role) VALUES ('$u', '$h', 'super') ON DUPLICATE KEY UPDATE password_hash='$h', role='super'");
 $messages[] = 'Skapade/updaterade Gio-användare.';
-$env = array(
+
+// Persist .env so the app can connect/login consistently
+$envOut = array(
   'server' => $host,
   'user' => $user,
   'pass' => $pass,
@@ -134,7 +128,7 @@ $env = array(
 );
 
 $content = '';
-foreach ($env as $k => $v) { $content .= $k . '=' . $v . "\n"; }
+foreach ($envOut as $k => $v) { $content .= $k . '=' . $v . "\n"; }
 $file = __DIR__ . '/.env';
 $written = @file_put_contents($file, $content);
 if ($written !== false) {
