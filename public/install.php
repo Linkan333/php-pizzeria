@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="card">
     <div class="section">
       <?php if ($alreadyInstalled): ?>
-        <p class="note">Installationen verkar redan vara konfigurerad (.env finns). Du kan köra om installationen för att återskapa databasen/tabellerna om något saknas.</p>
+        <p class="note">.ENV finns redan (Allt är ett virus)</p>
       <?php else: ?>
         <p class="muted">Klicka på Installera för att skapa databasen, tabellerna och standarddata. Inga inställningar behövs.</p>
       <?php endif; ?>
