@@ -4,7 +4,6 @@ $alreadyInstalled = file_exists(__DIR__ . '/../.env');
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // Run the installer with defaults/.env — no inputs needed
   require_once __DIR__ . '/../installscripts.php';
   exit;
 }

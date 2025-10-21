@@ -112,7 +112,6 @@ $h = mysqli_real_escape_string($conn, $hash);
 @mysqli_query($conn, "INSERT INTO users (username, password_hash, role) VALUES ('$u', '$h', 'super') ON DUPLICATE KEY UPDATE password_hash='$h', role='super'");
 $messages[] = 'Skapade/updaterade Gio-användare.';
 
-// Persist .env so the app can connect/login consistently
 $envOut = array(
   'server' => $host,
   'user' => $user,
